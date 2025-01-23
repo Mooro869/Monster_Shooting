@@ -1,14 +1,16 @@
 FPS = 60
-WIDTH = 500
+WIDTH = 900
 HEIGHT = 500
 
-BACKGROUND_IMAGE = 'image/background_img.jpg'
-BULLET_IMAGE = 'image/bullet.png'
+BACKGROUND_IMAGE = 'background_img.jpg'
+BULLET_IMAGE = 'bullet.png'
 
-PLAYER_DOWN = 'image/move_down.png'
-PLAYER_UP = 'image/move_up.png'
-PLAYER_LEFT = 'image/move_left.png'
-PLAYER_RIGHT = 'image/move_right.png'
+PLAYER_DOWN = 'move_down.png'
+PLAYER_UP = 'move_up.png'
+PLAYER_LEFT = 'move_left.png'
+PLAYER_RIGHT = 'move_right.png'
+BOX = 'box.png'
+GRASS = 'grass.png'
 
-BD_FILE = 'data/game_db'
+BD_FILE = 'data/game_db.sqlite3'
 FONT_FILE = 'data/font.ttf'
