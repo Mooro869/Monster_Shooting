@@ -116,13 +116,39 @@ if __name__ == '__main__':
     start_screen()  # Запуск заставки
     player, level_x, level_y = generate_level(load_level('lev1.txt'))
 
+    left = right = up = down = False
+
     while running:
-        for event in pygame.event.get():
+        for event in pygame.event.get():  # Обрабатываем события
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
+
+                if event.key == pygame.K_UP:
+                    up = True
+                    player.rect.y -= STEP
+                if event.key == pygame.K_LEFT:
+                    left = True
+                    player.rect.x -= STEP
+                if event.key == pygame.K_RIGHT:
+                    right = True
+                    player.rect.x += STEP
+
+                if event.key == pygame.K_UP:
+                    up = False
+                    player.rect.y -= STEP
+                if event.key == pygame.K_RIGHT:
+                    right = False
+                    player.rect.x += STEP
+                if event.key == pygame.K_LEFT:
+                    left = False
+                    player.rect.x -= STEP
+                if event.key == pygame.K_DOWN:
+                    down = False
+                    player.rect.y += STEP
+
         tiles_group.draw(screen)
         player_group.draw(screen)
         clock.tick(config.FPS)
