@@ -1,6 +1,6 @@
 FPS = 60
-WIDTH = 900
-HEIGHT = 500
+WIDTH = 800
+HEIGHT = 550
 
 BACKGROUND_IMAGE = 'background_img.jpg'
 BULLET_IMAGE = 'bullet.png'

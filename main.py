@@ -99,6 +99,7 @@ def start_screen():
                 terminate()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
+                screen.fill((0, 0, 0))
                 return  # начинаем игру
         pygame.display.flip()
         clock.tick(config.FPS)
@@ -126,26 +127,26 @@ if __name__ == '__main__':
                 if event.key == pygame.K_ESCAPE:
                     running = False
 
-                if event.key == pygame.K_UP:
+                if event.key == pygame.K_w:
                     up = True
                     player.rect.y -= STEP
-                if event.key == pygame.K_LEFT:
+                if event.key == pygame.K_a:
                     left = True
                     player.rect.x -= STEP
-                if event.key == pygame.K_RIGHT:
+                if event.key == pygame.K_d:
                     right = True
                     player.rect.x += STEP
 
-                if event.key == pygame.K_UP:
+                if event.key == pygame.K_w:
                     up = False
                     player.rect.y -= STEP
-                if event.key == pygame.K_RIGHT:
+                if event.key == pygame.K_d:
                     right = False
                     player.rect.x += STEP
-                if event.key == pygame.K_LEFT:
+                if event.key == pygame.K_a:
                     left = False
                     player.rect.x -= STEP
-                if event.key == pygame.K_DOWN:
+                if event.key == pygame.K_s:
                     down = False
                     player.rect.y += STEP
 
