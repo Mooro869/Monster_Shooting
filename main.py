@@ -5,12 +5,43 @@ import sys
 
 import config
 
-STEP = 10
 clock = pygame.time.Clock()
 player = None
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+tile_width = tile_height = 50
+
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(player_group, all_sprites)
+        self.image = player_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+
+
+class Tile(pygame.sprite.Sprite):
+    def __init__(self, tile_type, pos_x, pos_y):
+        super().__init__(tiles_group, all_sprites)
+        self.image = tile_images[tile_type]
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+
+
+class Bullet:
+    def __init__(self, x, y):
+        self.rect = pygame.Rect(x, y, 10, 5)  # Прямоугольник для пули
+        self.speed = 10  # Скорость пули
+
+    def update(self):
+        self.rect.x += self.speed  # Движение пули вправо
+
+    def draw(self, surface):
+        pygame.draw.rect(surface, BLACK, self.rect)
+
+
+def terminate():
+    pygame.quit()
+    sys.exit()
 
 
 def load_image(name, color_key=None):
@@ -29,21 +60,9 @@ tile_images = {
 }
 player_image = load_image(config.PLAYER_UP)
 
-tile_width = tile_height = 50
-
-
-class Player(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(player_group, all_sprites)
-        self.image = player_image
-        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
-
-
-class Tile(pygame.sprite.Sprite):
-    def __init__(self, tile_type, pos_x, pos_y):
-        super().__init__(tiles_group, all_sprites)
-        self.image = tile_images[tile_type]
-        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+'''
+Загрузка уровня из txt-файла
+'''
 
 
 def load_level(filename):
@@ -57,6 +76,11 @@ def load_level(filename):
 
     # дополняем каждую строку пустыми клетками ('.')
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
+
+
+'''
+Генерация уровня
+'''
 
 
 def generate_level(level):
@@ -74,15 +98,28 @@ def generate_level(level):
     return new_player, x, y
 
 
+'''
+Настройка заставки
+'''
+
+
 def start_screen():
-    intro_text = ["ЗАСТАВКА", "",
-                  "Правила игры",
-                  "Если в правилах несколько строк,",
-                  "приходится выводить их построчно"]
+    intro_text = ["Zombie Shooting", "",
+                  'Добро пожаловать в "Zombie Shooting"',
+                  '',
+                  "Правила игры:",
+                  "Убивайте монстров до окончания таймера ",
+                  "чтобы перейти на другой уровень!",
+                  "",
+                  "Если у вас закончатся жизни, вы проиграете!",
+                  "",
+                  "",
+                  "",
+                  "Для начала игры нажмите на любую кнопку"]
 
     fon = pygame.transform.scale(load_image(config.BACKGROUND_IMAGE), (config.WIDTH, config.HEIGHT))
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font(config.FONT_FILE, 15)
+    font = pygame.font.Font(config.FONT_FILE, 14)
     text_coord = 50
     for line in intro_text:
         string_rendered = font.render(line, 1, pygame.Color('red'))
@@ -107,20 +144,22 @@ def start_screen():
 
 if __name__ == '__main__':
     pygame.init()
-    pygame.display.set_caption('GAME')
+    pygame.display.set_caption('Zombie Shooting')
 
     size = width, height = config.WIDTH, config.HEIGHT
     screen = pygame.display.set_mode(size)
 
     running = True
+    left = right = up = down = False
 
     start_screen()  # Запуск заставки
     player, level_x, level_y = generate_level(load_level('lev1.txt'))
-
-    left = right = up = down = False
-
+    bullets = []
+    '''
+    Игровой цикл
+    '''
     while running:
-        for event in pygame.event.get():  # Обрабатываем события
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
@@ -129,26 +168,27 @@ if __name__ == '__main__':
 
                 if event.key == pygame.K_w:
                     up = True
-                    player.rect.y -= STEP
+                    player.rect.y -= config.PLAYER_SPEED
                 if event.key == pygame.K_a:
                     left = True
-                    player.rect.x -= STEP
+                    player.rect.x -= config.PLAYER_SPEED
                 if event.key == pygame.K_d:
                     right = True
-                    player.rect.x += STEP
+                    player.rect.x += config.PLAYER_SPEED
 
                 if event.key == pygame.K_w:
                     up = False
-                    player.rect.y -= STEP
+                    player.rect.y -= config.PLAYER_SPEED
                 if event.key == pygame.K_d:
                     right = False
-                    player.rect.x += STEP
+                    player.rect.x += config.PLAYER_SPEED
                 if event.key == pygame.K_a:
                     left = False
-                    player.rect.x -= STEP
+                    player.rect.x -= config.PLAYER_SPEED
                 if event.key == pygame.K_s:
                     down = False
-                    player.rect.y += STEP
+                    player.rect.y += config.PLAYER_SPEED
+
 
         tiles_group.draw(screen)
         player_group.draw(screen)

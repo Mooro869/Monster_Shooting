@@ -2,6 +2,9 @@ FPS = 60
 WIDTH = 800
 HEIGHT = 550
 
+PLAYER_SPEED = 10
+ZOMBIE_SPEED = 7
+
 BACKGROUND_IMAGE = 'background_img.jpg'
 BULLET_IMAGE = 'bullet.png'
 
