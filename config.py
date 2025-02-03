@@ -8,12 +8,19 @@ BULLET_SPEED = 7
 
 BACKGROUND_IMAGE = 'background_img.jpg'
 BULLET_IMAGE = 'bullet.png'
+ICON_IMAGE = 'icon.ico'
 
 # Анимация персонажа
 PLAYER_DOWN = 'move_down.png'
 PLAYER_UP = 'move_up.png'
 PLAYER_LEFT = 'move_left.png'
 PLAYER_RIGHT = 'move_right.png'
+
+# Анимация монстра
+MONSTER_DOWN = 'move_down_skeleton.png'
+MONSTER_UP = 'move_up_skeleton.png'
+MONSTER_LEFT = 'move_left_skeleton.png'
+MONSTER_RIGHT = 'move_right_skeleton.png'
 
 BOX = 'box.png'
 GRASS = 'grass.png'

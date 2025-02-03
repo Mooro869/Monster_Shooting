@@ -11,7 +11,8 @@ clock = pygame.time.Clock()
 
 # Задаем размеры окна
 screen = pygame.display.set_mode((config.WIDTH, config.HEIGHT))
-pygame.display.set_caption("Bullet Shooting Example")
+# Задаем заголовок окна
+pygame.display.set_caption("Zombie Shooting")
 
 # Цвета
 WHITE = (255, 255, 255)
@@ -24,6 +25,7 @@ player_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
 monster_group = pygame.sprite.Group()
 tile_width = tile_height = 50
+bullets = []
 
 
 # Класс для персонажа
@@ -86,7 +88,7 @@ class Tile(pygame.sprite.Sprite):
 
 
 def load_image(name, color_key=None):
-    fullname = os.path.join('data/image/', name)
+    fullname = os.path.join('../data/image/', name)
     image = pygame.image.load(fullname)
     if color_key is not None:
         if color_key == -1:
@@ -174,7 +176,8 @@ def start_screen():
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                terminate()
+                pygame.quit()
+                sys.exit()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
                 screen.fill((0, 0, 0))
@@ -185,15 +188,21 @@ def start_screen():
 
 # Главная функция
 def main():
-    bullets = []
     start_screen()  # Запуск заставки
     player, level_x, level_y = generate_level(load_level('lev1.txt'))
+
+    tiles_group.draw(screen)
+    player.draw(screen)
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
@@ -229,20 +238,16 @@ def main():
         for bullet in bullets:
             bullet.update()
 
-        # Очистка экрана
-        # screen.fill(WHITE)
-
         # Отрисовка
-
         for bullet in bullets:
             bullet.draw(screen)
 
-        # Обновление дисплея
-        tiles_group.draw(screen)
-        player.draw(screen)
+        if Bullet.rect.y >= 800:
+            print(True)
+
+
         clock.tick(config.FPS)  # Ограничение кадров в секунду
         pygame.display.flip()
-
 
 
 if __name__ == "__main__":

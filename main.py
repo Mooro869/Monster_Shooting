@@ -2,6 +2,7 @@ import pygame
 import sqlite3
 import os
 import sys
+import random
 
 import config
 
@@ -9,6 +10,8 @@ step = config.PLAYER_SPEED
 clock = pygame.time.Clock()
 player = None
 bullets = []
+coord_monster = [(327, 26), (630, 269), (335, 530), (30, 274)]
+tile_width = tile_height = 50
 
 # Цвета
 WHITE = (255, 255, 255)
@@ -17,6 +20,7 @@ BLACK = (0, 0, 0)
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+monster_group = pygame.sprite.Group()
 
 
 def load_image(name, color_key=None):
@@ -34,16 +38,8 @@ tile_images = {
     'empty': load_image(config.GRASS)
 }
 player_image = load_image(config.PLAYER_UP)
-
-tile_width = tile_height = 50
-
-
-# Класс для игрока
-class Player(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(player_group, all_sprites)
-        self.image = player_image
-        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+monster_image = load_image(config.MONSTER_UP)
+bullet_image = load_image(config.BULLET_IMAGE)
 
 
 # Класс для тайлов
@@ -57,6 +53,7 @@ class Tile(pygame.sprite.Sprite):
 # Класс для пули
 class Bullet:
     def __init__(self, x, y):
+        self.image = bullet_image
         self.rect = pygame.Rect(x, y, 10, 5)  # Прямоугольник для пули
         self.speed = config.BULLET_SPEED  # Скорость пули
         self.rotation = None
@@ -87,7 +84,34 @@ class Bullet:
             self.rect.y += self.speed
 
     def draw(self, surface):
-        pygame.draw.rect(surface, WHITE, self.rect)
+        pygame.draw.rect(surface, BLACK, self.rect)
+
+
+# Класс для игрока
+class Player(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(player_group, all_sprites)
+        self.image = player_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+
+    def check_rotation(self, rotation):
+        self.rotation = rotation
+        if self.rotation == 'right':
+            self.image = load_image(config.PLAYER_RIGHT)
+        elif self.rotation == 'left':
+            self.image = load_image(config.PLAYER_LEFT)
+        elif self.rotation == 'up':
+            self.image = load_image(config.PLAYER_UP)
+        elif self.rotation == 'down':
+            self.image = load_image(config.PLAYER_DOWN)
+
+
+# Класс для игрока
+class Monster(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(monster_group, all_sprites)
+        self.image = monster_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
 
 
 def load_level(filename):
@@ -174,28 +198,36 @@ if __name__ == '__main__':
                 if event.key == pygame.K_w:
                     up = True
                     player.rect.y -= step
+                    Player.check_rotation(player, 'up')
                 if event.key == pygame.K_a:
                     left = True
                     player.rect.x -= step
+                    Player.check_rotation(player, 'left')
                 if event.key == pygame.K_d:
                     down = True
                     player.rect.x += step
+                    Player.check_rotation(player, 'right')
                 if event.key == pygame.K_s:
                     down = True
                     player.rect.y += step
+                    Player.check_rotation(player, 'down')
 
                 if event.key == pygame.K_w:
                     up = False
                     player.rect.y -= step
+                    Player.check_rotation(player, 'up')
                 if event.key == pygame.K_d:
                     right = False
                     player.rect.x += step
+                    Player.check_rotation(player, 'right')
                 if event.key == pygame.K_a:
                     left = False
                     player.rect.x -= step
+                    Player.check_rotation(player, 'left')
                 if event.key == pygame.K_s:
                     down = False
                     player.rect.y += step
+                    Player.check_rotation(player, 'down')
 
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_LEFT]:
@@ -220,6 +252,8 @@ if __name__ == '__main__':
 
         tiles_group.draw(screen)
         player_group.draw(screen)
+        monster_group.draw(screen)
+
 
         '''
         Ограничение передвижения для персонажа
