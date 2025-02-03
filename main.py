@@ -5,7 +5,7 @@ import sys
 
 import config
 
-STEP = config.PLAYER_SPEED
+step = config.PLAYER_SPEED
 clock = pygame.time.Clock()
 player = None
 bullets = []
@@ -151,7 +151,7 @@ def start_screen():
 
 if __name__ == '__main__':
     pygame.init()
-    pygame.display.set_caption('GAME')
+    pygame.display.set_caption('Monster Shooting')
 
     size = width, height = config.WIDTH, config.HEIGHT
     screen = pygame.display.set_mode(size)
@@ -173,26 +173,29 @@ if __name__ == '__main__':
 
                 if event.key == pygame.K_w:
                     up = True
-                    player.rect.y -= STEP
+                    player.rect.y -= step
                 if event.key == pygame.K_a:
                     left = True
-                    player.rect.x -= STEP
+                    player.rect.x -= step
                 if event.key == pygame.K_d:
-                    right = True
-                    player.rect.x += STEP
+                    down = True
+                    player.rect.x += step
+                if event.key == pygame.K_s:
+                    down = True
+                    player.rect.y += step
 
                 if event.key == pygame.K_w:
                     up = False
-                    player.rect.y -= STEP
+                    player.rect.y -= step
                 if event.key == pygame.K_d:
                     right = False
-                    player.rect.x += STEP
+                    player.rect.x += step
                 if event.key == pygame.K_a:
                     left = False
-                    player.rect.x -= STEP
+                    player.rect.x -= step
                 if event.key == pygame.K_s:
                     down = False
-                    player.rect.y += STEP
+                    player.rect.y += step
 
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_LEFT]:
@@ -218,6 +221,21 @@ if __name__ == '__main__':
         tiles_group.draw(screen)
         player_group.draw(screen)
 
+        '''
+        Ограничение передвижения для персонажа
+        '''
+        if player.rect.centerx <= 61:  # Правая стена
+            player.rect.centerx += 1
+
+        if player.rect.centerx >= 588:  # Левая стена
+            player.rect.centerx -= 1
+
+        if player.rect.centery <= 72:  # Верхняя стена
+            player.rect.centery += 1
+
+        if player.rect.centery >= 485:  # Нижняя стена
+            player.rect.centery -= 1
+
         # Отрисовка
         for bullet in bullets:
             bullet.draw(screen)
@@ -225,9 +243,6 @@ if __name__ == '__main__':
         # Обновление положения пуль
         for bullet in bullets:
             bullet.update()
-
-        if player.rect.centery >= config.HEIGHT:
-            config.PLAYER_SPEED = 0
 
         clock.tick(config.FPS)
         pygame.display.flip()

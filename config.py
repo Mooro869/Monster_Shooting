@@ -2,17 +2,19 @@ FPS = 60
 WIDTH = 800
 HEIGHT = 550
 
-PLAYER_SPEED = 4
+PLAYER_SPEED = 7
 ZOMBIE_SPEED = 3
 BULLET_SPEED = 7
 
 BACKGROUND_IMAGE = 'background_img.jpg'
 BULLET_IMAGE = 'bullet.png'
 
+# Анимация персонажа
 PLAYER_DOWN = 'move_down.png'
 PLAYER_UP = 'move_up.png'
 PLAYER_LEFT = 'move_left.png'
 PLAYER_RIGHT = 'move_right.png'
+
 BOX = 'box.png'
 GRASS = 'grass.png'
 
