@@ -3,12 +3,11 @@ WIDTH = 800
 HEIGHT = 550
 
 PLAYER_SPEED = 7
-ZOMBIE_SPEED = 3
+MONSTER_SPEED = 6
 BULLET_SPEED = 7
 
 BACKGROUND_IMAGE = 'background_img.jpg'
 BULLET_IMAGE = 'bullet.png'
-ICON_IMAGE = 'icon.ico'
 
 # Анимация персонажа
 PLAYER_DOWN = 'move_down.png'
@@ -27,3 +26,4 @@ GRASS = 'grass.png'
 
 BD_FILE = 'data/game_db.sqlite3'
 FONT_FILE = 'data/font.ttf'
+MUSIC_FILE = 'data/sound/background_sound.ogg'

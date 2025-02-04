@@ -109,7 +109,7 @@ def generate_level(level):
 
 
 def start_screen():
-    intro_text = ["Zombie Shooting", "",
+    intro_text = ["Monster Shooting", "",
                   'Добро пожаловать в "Zombie Shooting"',
                   '',
                   "Правила игры:",

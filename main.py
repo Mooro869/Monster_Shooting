@@ -10,7 +10,7 @@ step = config.PLAYER_SPEED
 clock = pygame.time.Clock()
 player = None
 bullets = []
-coord_monster = [(327, 26), (630, 269), (335, 530), (30, 274)]
+coord_monster = [(6, 0), (12, 5), (6, 10), (0, 5)]
 tile_width = tile_height = 50
 
 # Цвета
@@ -61,17 +61,17 @@ class Bullet:
     def check_rotation(self, rotation):
         self.rotation = rotation
 
-    def bullet_left(self):
-        self.rect.x -= self.speed
-
-    def bullet_right(self):
-        self.rect.x += self.speed
-
-    def bullet_up(self):
-        self.rect.y -= self.speed
-
-    def bullet_down(self):
-        self.rect.y += self.speed
+    # def bullet_left(self):
+    #     self.rect.x -= self.speed
+    #
+    # def bullet_right(self):
+    #     self.rect.x += self.speed
+    #
+    # def bullet_up(self):
+    #     self.rect.y -= self.speed
+    #
+    # def bullet_down(self):
+    #     self.rect.y += self.speed
 
     def update(self):
         if self.rotation == 'right':
@@ -114,6 +114,11 @@ class Monster(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
 
 
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+
 def load_level(filename):
     filename = "data/" + filename
     # читаем уровень, убирая символы перевода строки
@@ -143,10 +148,17 @@ def generate_level(level):
 
 
 def start_screen():
-    intro_text = ["ЗАСТАВКА", "",
-                  "Правила игры",
-                  "Если в правилах несколько строк,",
-                  "приходится выводить их построчно"]
+    intro_text = ["Monster Shooting", "",
+                  'Добро пожаловать в "Monster Shooting"',
+                  '',
+                  "Правила игры:",
+                  "Убивайте монстров до окончания таймера ",
+                  "чтобы перейти на другой уровень!",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "Для начала игры нажмите на любую кнопку"]
 
     fon = pygame.transform.scale(load_image(config.BACKGROUND_IMAGE), (config.WIDTH, config.HEIGHT))
     screen.blit(fon, (0, 0))
@@ -173,9 +185,53 @@ def start_screen():
         clock.tick(config.FPS)
 
 
+def timer():
+    clock = pygame.time.Clock()
+    font = pygame.font.Font(config.FONT_FILE, 15)
+    counter = 120
+    text = font.render(str(counter), True, 'red')
+
+    timer_event = pygame.USEREVENT + 1
+    pygame.time.set_timer(timer_event, 120000)
+    counter = 10
+    text = font.render(str(counter), True, (0, 128, 0))
+
+    timer_event = pygame.USEREVENT + 1
+    pygame.time.set_timer(timer_event, 1000)
+
+    run = True
+    while run:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            elif event.type == timer_event:
+                counter -= 1
+                text = font.render(str(counter), True, (0, 128, 0))
+                if counter == 0:
+                    pygame.time.set_timer(timer_event, 0)
+
+        screen.fill((255, 255, 255))
+        text_rect = text.get_rect(center=screen.get_rect().center)
+        window.blit(text, text_rect)
+        pygame.display.flip()
+
+
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Monster Shooting')
+
+    # Создание объекта-плеера
+    music = pygame.mixer.music
+
+    # Загрузка музыкального файла
+    music.load(config.MUSIC_FILE)
+
+    # Установка громкости
+    music.set_volume(0.1)
+
+    # Включение музыки
+    music.play(-1)
 
     size = width, height = config.WIDTH, config.HEIGHT
     screen = pygame.display.set_mode(size)
@@ -183,9 +239,19 @@ if __name__ == '__main__':
     running = True
 
     start_screen()  # Запуск заставки
-    player, level_x, level_y = generate_level(load_level('lev1.txt'))
+    player, level_x, level_y = generate_level(load_level('lev1.txt'))  # Генерация уровня
+
+    # Создание монстра
+    Monster(12, 5)
 
     left = right = up = down = False
+
+    font = pygame.font.Font(config.FONT_FILE, 15)
+    counter = 120
+    text = font.render(str(counter), True, 'red')
+
+    timer_event = pygame.USEREVENT + 1
+    pygame.time.set_timer(timer_event, 1000)
 
     while running:
         for event in pygame.event.get():  # Обрабатываем события
@@ -194,6 +260,10 @@ if __name__ == '__main__':
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
+
+                if event.type == timer_event:
+                    counter -= 1
+                    text = font.render(str(counter), True, 'red')
 
                 if event.key == pygame.K_w:
                     up = True
@@ -253,7 +323,7 @@ if __name__ == '__main__':
         tiles_group.draw(screen)
         player_group.draw(screen)
         monster_group.draw(screen)
-
+        screen.blit(text, (660, 10))
 
         '''
         Ограничение передвижения для персонажа
@@ -277,6 +347,7 @@ if __name__ == '__main__':
         # Обновление положения пуль
         for bullet in bullets:
             bullet.update()
+
 
         clock.tick(config.FPS)
         pygame.display.flip()
