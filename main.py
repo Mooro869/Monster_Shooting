@@ -38,7 +38,7 @@ tile_images = {
     'empty': load_image(config.GRASS)
 }
 player_image = load_image(config.PLAYER_UP)
-monster_image = load_image(config.MONSTER_UP)
+monster_image = load_image(config.MONSTER_RIGHT)
 bullet_image = load_image(config.BULLET_IMAGE)
 
 
@@ -61,18 +61,6 @@ class Bullet:
     def check_rotation(self, rotation):
         self.rotation = rotation
 
-    # def bullet_left(self):
-    #     self.rect.x -= self.speed
-    #
-    # def bullet_right(self):
-    #     self.rect.x += self.speed
-    #
-    # def bullet_up(self):
-    #     self.rect.y -= self.speed
-    #
-    # def bullet_down(self):
-    #     self.rect.y += self.speed
-
     def update(self):
         if self.rotation == 'right':
             self.rect.x += self.speed
@@ -91,8 +79,13 @@ class Bullet:
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
+        self.pos_x = pos_x
+        self.pos_y = pos_y
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+
+    def coord_player(self):
+        print(self.rect.x, self.rect.y)
 
     def check_rotation(self, rotation):
         self.rotation = rotation
@@ -110,8 +103,32 @@ class Player(pygame.sprite.Sprite):
 class Monster(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(monster_group, all_sprites)
+        self.pos_x = pos_x
+        self.pos_y = pos_y
         self.image = monster_image
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+
+    def coord_monster(self):
+        print(self.rect.x, self.rect.y)
+
+    def move(self):
+        distance = 0
+        self.speed = 2
+        self.counter = 0
+        if 0 <= self.counter <= distance:
+            self.rect.x += self.speed
+        elif distance <= self.counter <= distance * 2:
+            self.rect.x -= self.speed
+        else:
+            self.counter = 0
+
+        self.counter += 1
+
+    def update(self):
+        if self.rect.x > 560:
+            self.image = load_image(config.MONSTER_LEFT)
+        elif self.rect.x < 60:
+            self.image = load_image(config.MONSTER_RIGHT)
 
 
 def terminate():
@@ -192,11 +209,6 @@ def timer():
     text = font.render(str(counter), True, 'red')
 
     timer_event = pygame.USEREVENT + 1
-    pygame.time.set_timer(timer_event, 120000)
-    counter = 10
-    text = font.render(str(counter), True, (0, 128, 0))
-
-    timer_event = pygame.USEREVENT + 1
     pygame.time.set_timer(timer_event, 1000)
 
     run = True
@@ -204,16 +216,16 @@ def timer():
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                terminate()
                 run = False
             elif event.type == timer_event:
                 counter -= 1
-                text = font.render(str(counter), True, (0, 128, 0))
+                text = font.render(str(counter), True, 'red')
                 if counter == 0:
                     pygame.time.set_timer(timer_event, 0)
+        print(counter)
 
-        screen.fill((255, 255, 255))
-        text_rect = text.get_rect(center=screen.get_rect().center)
-        window.blit(text, text_rect)
+        screen.blit(text, (660, 10))
         pygame.display.flip()
 
 
@@ -242,17 +254,7 @@ if __name__ == '__main__':
     player, level_x, level_y = generate_level(load_level('lev1.txt'))  # Генерация уровня
 
     # Создание монстра
-    Monster(12, 5)
-
-    left = right = up = down = False
-
-    font = pygame.font.Font(config.FONT_FILE, 15)
-    counter = 120
-    text = font.render(str(counter), True, 'red')
-
-    timer_event = pygame.USEREVENT + 1
-    pygame.time.set_timer(timer_event, 1000)
-
+    monster = Monster(1, 5)
     while running:
         for event in pygame.event.get():  # Обрабатываем события
             if event.type == pygame.QUIT:
@@ -260,10 +262,6 @@ if __name__ == '__main__':
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
-
-                if event.type == timer_event:
-                    counter -= 1
-                    text = font.render(str(counter), True, 'red')
 
                 if event.key == pygame.K_w:
                     up = True
@@ -323,7 +321,6 @@ if __name__ == '__main__':
         tiles_group.draw(screen)
         player_group.draw(screen)
         monster_group.draw(screen)
-        screen.blit(text, (660, 10))
 
         '''
         Ограничение передвижения для персонажа
@@ -348,6 +345,15 @@ if __name__ == '__main__':
         for bullet in bullets:
             bullet.update()
 
+        # Обновление движения монстров
+        for el in monster_group:
+            el.move()
+            el.update()
+
+        # timer()
+
+        # player.coord_player()
+        monster.coord_monster()
 
         clock.tick(config.FPS)
         pygame.display.flip()
