@@ -21,6 +21,7 @@ all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 monster_group = pygame.sprite.Group()
+bullets_group = pygame.sprite.Group()
 
 
 def load_image(name, color_key=None):
@@ -51,8 +52,9 @@ class Tile(pygame.sprite.Sprite):
 
 
 # Класс для пули
-class Bullet:
+class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
+        super().__init__(bullets_group, all_sprites)
         self.image = bullet_image
         self.rect = pygame.Rect(x, y, 10, 5)  # Прямоугольник для пули
         self.speed = config.BULLET_SPEED  # Скорость пули
@@ -99,7 +101,7 @@ class Player(pygame.sprite.Sprite):
             self.image = load_image(config.PLAYER_DOWN)
 
 
-# Класс для игрока
+# Класс для монстра
 class Monster(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(monster_group, all_sprites)
@@ -108,27 +110,29 @@ class Monster(pygame.sprite.Sprite):
         self.image = monster_image
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
 
+        # Начальная позиция монстра
+        self.start_x = self.rect.x
+        # Задаем максимальное смещение по х
+        self.max_distance = 500  # Используйте нужное вам значение
+        self.direction = 1  # 1 для движения вправо, -1 для движения влево
+
     def coord_monster(self):
         print(self.rect.x, self.rect.y)
 
     def move(self):
-        distance = 0
-        self.speed = 2
-        self.counter = 0
-        if 0 <= self.counter <= distance:
-            self.rect.x += self.speed
-        elif distance <= self.counter <= distance * 2:
-            self.rect.x -= self.speed
-        else:
-            self.counter = 0
+        # Изменяем положение в зависимости от направления
+        self.rect.x += self.direction * config.MONSTER_SPEED
 
-        self.counter += 1
+        # Проверяем, достигли ли мы максимальной дистанции
+        if self.rect.x >= self.start_x + self.max_distance or self.rect.x <= self.start_x:
+            self.direction *= -1  # Меняем направление при достижении границы
 
     def update(self):
-        if self.rect.x > 560:
-            self.image = load_image(config.MONSTER_LEFT)
-        elif self.rect.x < 60:
-            self.image = load_image(config.MONSTER_RIGHT)
+        self.move()
+        if self.direction == 1:
+            self.image = load_image(config.MONSTER_RIGHT)  # Двигается вправо
+        else:
+            self.image = load_image(config.MONSTER_LEFT)  # Двигается влево
 
 
 def terminate():
