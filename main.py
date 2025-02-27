@@ -114,12 +114,23 @@ class Player(pygame.sprite.Sprite):
         super().__init__(player_group, all_sprites)
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
-        self.health = 10  # Начальное здоровье игрока
+        self.health = 3  # Начальное здоровье игрока
+        self.invincible = False  # Флаг неуязвимости
+        self.invincible_time = 2000  # Время неуязвимости в миллисекундах (например, 2 секунды)
+        self.last_hit_time = 0  # Время последнего касания
 
     def take_damage(self, amount):
-        self.health -= amount
-        if self.health < 0:
-            self.health = 0
+        if not self.invincible:  # Если игрок не неуязвим
+            self.health -= amount
+            if self.health < 0:
+                self.health = 0
+            self.invincible = True  # Включаем неуязвимость
+            self.last_hit_time = pygame.time.get_ticks()  # Запоминаем время последнего касания
+
+    def update(self):
+        # Проверяем, истекло ли время неуязвимости
+        if self.invincible and pygame.time.get_ticks() - self.last_hit_time > self.invincible_time:
+            self.invincible = False  # Сбрасываем неуязвимость
 
     def draw_health(self, surface):
         font = pygame.font.Font(config.FONT_FILE, 15)
@@ -340,6 +351,8 @@ if __name__ == '__main__':
         # Проверяем столкновение между игроком и монстрами
         if pygame.sprite.spritecollideany(player, monster_group):
             player.take_damage(1)  # Уменьшаем здоровье на 1 при касании
+
+        all_sprites.update()
 
         tiles_group.draw(screen)
         player_group.draw(screen)
