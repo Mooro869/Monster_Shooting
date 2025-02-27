@@ -1,8 +1,10 @@
+from time import sleep
+import random
+
 import pygame
 import sqlite3
 import os
 import sys
-import random
 
 import config
 
@@ -12,6 +14,7 @@ player = None
 bullets = []
 coord_monster = [(6, 0), (12, 5), (6, 10), (0, 5)]
 tile_width = tile_height = 50
+hp = 3
 
 # Цвета
 WHITE = (255, 255, 255)
@@ -40,7 +43,6 @@ tile_images = {
 }
 player_image = load_image(config.PLAYER_UP)
 monster_image = load_image(config.MONSTER_RIGHT)
-bullet_image = load_image(config.BULLET_IMAGE)
 
 
 # Класс для тайлов
@@ -55,7 +57,6 @@ class Tile(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(bullets_group, all_sprites)
-        self.image = bullet_image
         self.rect = pygame.Rect(x, y, 10, 5)  # Прямоугольник для пули
         self.speed = config.BULLET_SPEED  # Скорость пули
         self.rotation = None
@@ -74,6 +75,37 @@ class Bullet(pygame.sprite.Sprite):
             self.rect.y += self.speed
 
     def draw(self, surface):
+
+        pygame.draw.rect(surface, BLACK, self.rect)
+
+
+# Класс для пули
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__(bullets_group, all_sprites)
+        self.rect = pygame.Rect(x, y, 10, 5)  # Прямоугольник для пули
+        self.speed = config.BULLET_SPEED  # Скорость пули
+        self.rotation = None
+
+    def check_rotation(self, rotation):
+        self.rotation = rotation
+
+    def update(self):
+        if self.rotation == 'right':
+            self.rect.x += self.speed
+        elif self.rotation == 'left':
+            self.rect.x -= self.speed
+        elif self.rotation == 'up':
+            self.rect.y -= self.speed
+        elif self.rotation == 'down':
+            self.rect.y += self.speed
+
+        # Проверяем столкновение с монстрами
+        hit_monsters = pygame.sprite.spritecollide(self, monster_group, True)  # Удаляем столкнувшиеся монстры
+        if hit_monsters:
+            self.kill()  # Удаляем пулю после столкновения
+
+    def draw(self, surface):
         pygame.draw.rect(surface, BLACK, self.rect)
 
 
@@ -85,9 +117,6 @@ class Player(pygame.sprite.Sprite):
         self.pos_y = pos_y
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
-
-    def coord_player(self):
-        print(self.rect.x, self.rect.y)
 
     def check_rotation(self, rotation):
         self.rotation = rotation
@@ -116,9 +145,6 @@ class Monster(pygame.sprite.Sprite):
         self.max_distance = 500  # Используйте нужное вам значение
         self.direction = 1  # 1 для движения вправо, -1 для движения влево
 
-    def coord_monster(self):
-        print(self.rect.x, self.rect.y)
-
     def move(self):
         # Изменяем положение в зависимости от направления
         self.rect.x += self.direction * config.MONSTER_SPEED
@@ -133,6 +159,12 @@ class Monster(pygame.sprite.Sprite):
             self.image = load_image(config.MONSTER_RIGHT)  # Двигается вправо
         else:
             self.image = load_image(config.MONSTER_LEFT)  # Двигается влево
+
+    @staticmethod
+    def spawn_monster():
+        pos_x = 1  # фиксированное значение x для спавна
+        pos_y = random.randint(1, 9)  # случайное значение y от 1 до 9
+        Monster(pos_x, pos_y)  # создание нового монстра
 
 
 def terminate():
@@ -169,17 +201,15 @@ def generate_level(level):
 
 
 def start_screen():
-    intro_text = ["Monster Shooting", "",
+    intro_text = ["Monster Shooting",
                   'Добро пожаловать в "Monster Shooting"',
                   '',
-                  "Правила игры:",
-                  "Убивайте монстров до окончания таймера ",
-                  "чтобы перейти на другой уровень!",
+                  "",
+                  "Убивайте монстров чтобы не умереть!",
                   "",
                   "",
                   "",
-                  "",
-                  "Для начала игры нажмите на любую кнопку"]
+                  "Чтобы начать игру нажмите на любую кнопку"]
 
     fon = pygame.transform.scale(load_image(config.BACKGROUND_IMAGE), (config.WIDTH, config.HEIGHT))
     screen.blit(fon, (0, 0))
@@ -206,31 +236,11 @@ def start_screen():
         clock.tick(config.FPS)
 
 
-def timer():
-    clock = pygame.time.Clock()
+def draw_health(surface, health):
     font = pygame.font.Font(config.FONT_FILE, 15)
-    counter = 120
-    text = font.render(str(counter), True, 'red')
-
-    timer_event = pygame.USEREVENT + 1
-    pygame.time.set_timer(timer_event, 1000)
-
-    run = True
-    while run:
-        clock.tick(60)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-                run = False
-            elif event.type == timer_event:
-                counter -= 1
-                text = font.render(str(counter), True, 'red')
-                if counter == 0:
-                    pygame.time.set_timer(timer_event, 0)
-        print(counter)
-
-        screen.blit(text, (660, 10))
-        pygame.display.flip()
+    # Отображение здоровья на экране
+    health_text = font.render(f"Health: {health}", True, WHITE)
+    surface.blit(health_text, (10, 10))
 
 
 if __name__ == '__main__':
@@ -244,9 +254,9 @@ if __name__ == '__main__':
     music.load(config.MUSIC_FILE)
 
     # Установка громкости
-    music.set_volume(0.1)
+    music.set_volume(0.05)
 
-    # Включение музыки
+    # Включение музыки на повтор
     music.play(-1)
 
     size = width, height = config.WIDTH, config.HEIGHT
@@ -257,9 +267,9 @@ if __name__ == '__main__':
     start_screen()  # Запуск заставки
     player, level_x, level_y = generate_level(load_level('lev1.txt'))  # Генерация уровня
 
-    # Создание монстра
     monster = Monster(1, 5)
-    while running:
+
+    while running or hp != 0:
         for event in pygame.event.get():  # Обрабатываем события
             if event.type == pygame.QUIT:
                 running = False
@@ -326,6 +336,8 @@ if __name__ == '__main__':
         player_group.draw(screen)
         monster_group.draw(screen)
 
+        monster.spawn_monster()
+
         '''
         Ограничение передвижения для персонажа
         '''
@@ -341,7 +353,7 @@ if __name__ == '__main__':
         if player.rect.centery >= 485:  # Нижняя стена
             player.rect.centery -= 1
 
-        # Отрисовка
+        # Отрисовка пуль
         for bullet in bullets:
             bullet.draw(screen)
 
@@ -354,10 +366,7 @@ if __name__ == '__main__':
             el.move()
             el.update()
 
-        # timer()
-
-        # player.coord_player()
-        monster.coord_monster()
+        draw_health(screen, hp)
 
         clock.tick(config.FPS)
         pygame.display.flip()
