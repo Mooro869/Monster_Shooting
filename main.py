@@ -1,4 +1,4 @@
-from time import sleep
+from datetime import datetime
 import random
 import os
 import sys
@@ -28,6 +28,23 @@ monster_group = pygame.sprite.Group()
 bullets_group = pygame.sprite.Group()
 
 
+# Подключение к базе данных
+def create_connection():
+    conn = sqlite3.connect(config.BD_FILE)
+    return conn
+
+
+def insert_score(conn, score):
+    cursor = conn.cursor()
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Получаем текущую дату и время
+    cursor.execute('''
+        INSERT INTO Rating (score, date)
+        VALUES (?, ?)
+    ''', (score, date))
+    conn.commit()
+
+
+# Отображения экрана победы
 def show_victory_screen():
     font = pygame.font.Font(config.FONT_FILE, 40)
     victory_text = font.render("Победа!", True, GREEN)
@@ -48,7 +65,7 @@ def show_victory_screen():
                 waiting = False
 
 
-# Функция для отображения экрана поражения
+# Отображения экрана поражения
 def show_game_over_screen():
     font = pygame.font.Font(config.FONT_FILE, 40)
     game_over_text = font.render("Игра окончена", True, RED)
@@ -442,13 +459,17 @@ if __name__ == '__main__':
 
         # Проверяем условия победы и поражения
         if player.score >= 1000:
+            insert_score(create_connection(), player.score)  # Вставить очки и дату
             show_victory_screen()  # Показываем экран победы
             running = False  # Завершаем основной цикл
+
         elif player.health <= 0:
+            insert_score(create_connection(), player.score)
             show_game_over_screen()  # Показываем экран поражения
             running = False  # Завершаем основной цикл
 
         clock.tick(config.FPS)
         pygame.display.flip()
 
+    create_connection().close()
     pygame.quit()
