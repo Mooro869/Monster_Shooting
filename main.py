@@ -80,10 +80,10 @@ def show_game_over_screen():
     while waiting:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                terminate()
             elif event.type == pygame.KEYDOWN:
                 waiting = False
+        pygame.quit()
 
 
 def load_image(name, color_key=None):
@@ -345,7 +345,7 @@ if __name__ == '__main__':
     running = True
 
     start_screen()  # Запуск заставки
-    player, level_x, level_y = generate_level(load_level('lev1.txt'))  # Генерация уровня
+    player, level_x, level_y = generate_level(load_level('level1.txt'))  # Генерация уровня
 
     monster = Monster(1, 5)
 
