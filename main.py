@@ -1,10 +1,10 @@
 from time import sleep
 import random
+import os
+import sys
 
 import pygame
 import sqlite3
-import os
-import sys
 
 import config
 
@@ -102,6 +102,7 @@ class Bullet(pygame.sprite.Sprite):
         # Проверяем столкновение с монстрами
         hit_monsters = pygame.sprite.spritecollide(self, monster_group, True)  # Удаляем столкнувшиеся монстры
         if hit_monsters:
+            player.score += 1  # Увеличиваем счет на 1 при попадании
             self.kill()  # Удаляем пулю после столкновения
 
     def draw(self, surface):
@@ -116,8 +117,9 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
         self.health = 3  # Начальное здоровье игрока
         self.invincible = False  # Флаг неуязвимости
-        self.invincible_time = 2000  # Время неуязвимости в миллисекундах (например, 2 секунды)
+        self.invincible_time = 2000  # Время неуязвимости в миллисекундах
         self.last_hit_time = 0  # Время последнего касания
+        self.score = 0  # Начальное количество очков
 
     def take_damage(self, amount):
         if not self.invincible:  # Если игрок не неуязвим
@@ -136,6 +138,11 @@ class Player(pygame.sprite.Sprite):
         font = pygame.font.Font(config.FONT_FILE, 15)
         health_text = font.render(f"Health: {self.health}", True, WHITE)
         surface.blit(health_text, (10, 10))  # Отображаем здоровье в (10, 10)
+
+    def draw_score(self, surface):
+        font = pygame.font.Font(config.FONT_FILE, 15)
+        score_text = font.render(f"Score: {self.score}", True, WHITE)
+        surface.blit(score_text, (10, 30))  # Отображаем счет в (10, 30)
 
     def check_rotation(self, rotation):
         self.rotation = rotation
@@ -361,6 +368,7 @@ if __name__ == '__main__':
         monster.spawn_monster()
 
         player.draw_health(screen)
+        player.draw_score(screen)
 
         '''
         Ограничение передвижения для персонажа
