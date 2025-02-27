@@ -18,12 +18,55 @@ tile_width = tile_height = 50
 # Цвета
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 monster_group = pygame.sprite.Group()
 bullets_group = pygame.sprite.Group()
+
+
+def show_victory_screen():
+    font = pygame.font.Font(config.FONT_FILE, 40)
+    victory_text = font.render("Победа!", True, GREEN)
+    text_rect = victory_text.get_rect(center=(config.WIDTH // 2, config.HEIGHT // 2))
+
+    screen.fill(BLACK)
+    screen.blit(victory_text, text_rect)
+    pygame.display.flip()
+
+    # Ждем нажатия клавиши, чтобы выйти
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                waiting = False
+
+
+# Функция для отображения экрана поражения
+def show_game_over_screen():
+    font = pygame.font.Font(config.FONT_FILE, 40)
+    game_over_text = font.render("Игра окончена", True, RED)
+    text_rect = game_over_text.get_rect(center=(config.WIDTH // 2, config.HEIGHT // 2))
+
+    screen.fill(BLACK)
+    screen.blit(game_over_text, text_rect)
+    pygame.display.flip()
+
+    # Ждем нажатия клавиши, чтобы выйти
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                waiting = False
 
 
 def load_image(name, color_key=None):
@@ -370,9 +413,8 @@ if __name__ == '__main__':
         player.draw_health(screen)
         player.draw_score(screen)
 
-        '''
-        Ограничение передвижения для персонажа
-        '''
+        # Ограничение передвижения для персонажа
+
         if player.rect.centerx <= 61:  # Правая стена
             player.rect.centerx += 1
 
@@ -398,6 +440,15 @@ if __name__ == '__main__':
             el.move()
             el.update()
 
+        # Проверяем условия победы и поражения
+        if player.score >= 1000:
+            show_victory_screen()  # Показываем экран победы
+            running = False  # Завершаем основной цикл
+        elif player.health <= 0:
+            show_game_over_screen()  # Показываем экран поражения
+            running = False  # Завершаем основной цикл
+
         clock.tick(config.FPS)
         pygame.display.flip()
+
     pygame.quit()
